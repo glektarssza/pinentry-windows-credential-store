@@ -1,6 +1,6 @@
 # pinentry Windows Credential Store #
 
-A pinentry program that supports the Windows Credential Store.
+A GnuPG pinentry program that supports the Windows Credential Store.
 
 <!-- omit in toc -->
 ## Table of Contents ##
