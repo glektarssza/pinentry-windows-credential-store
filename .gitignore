@@ -36,3 +36,12 @@ tags
 
 # Environment #
 .envrc
+
+# Odin Language Server #
+ols.json
+
+# Artifacts #
+.task/
+build/
+dist/
+*.zip
