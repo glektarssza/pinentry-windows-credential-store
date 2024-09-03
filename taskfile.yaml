@@ -26,7 +26,7 @@ vars:
   #-- Compiler Flags
   compilerDefines: -define:PROJECT_NAME="{{.projectName}}" -define:PROJECT_VERSION="{{.projectVersion}}" -define:PROJECT_DESCRIPTION="{{.projectDescription}}"
   compilerTestDefines: '{{.compilerDefines}}'
-  compilerCollections: '-collection:lib={{.libDir}}'
+  compilerCollections: ''
   compilerTestCollections: '{{.compilerCollections}} -collection:src={{.srcDir}} -collection:test_utils={{.testsDir}}/utils'
   compilerBaseFlags: '-build-mode:exe'
   compilerDebugFlags: '{{.compilerBaseFlags}} -o:none -debug'
