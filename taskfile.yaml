@@ -267,5 +267,4 @@ tasks:
       - lint
     deps:
       - lint-src
-      - lint-lib
       - lint-tests
