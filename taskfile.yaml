@@ -12,6 +12,9 @@ vars:
   testsDir: tests
   buildDir: build
   distDir: dist
+  #-- Shell Settings
+  shell: '{{if eq OS "windows"}}bash -c ''{{end}}'
+  postShell: '{{if eq OS "windows"}}''{{end}}'
   #-- Output Settings
   outputBaseName: odincraft
   outputNameDebug: '{{.outputBaseName}}-debug'
@@ -27,7 +30,8 @@ vars:
   compilerDefines: -define:PROJECT_NAME="{{.projectName}}" -define:PROJECT_VERSION="{{.projectVersion}}" -define:PROJECT_DESCRIPTION="{{.projectDescription}}"
   compilerTestDefines: '{{.compilerDefines}}'
   compilerCollections: ''
-  compilerTestCollections: '{{.compilerCollections}} -collection:src={{.srcDir}} -collection:test_utils={{.testsDir}}/utils'
+  compilerTestCollections: '{{.compilerCollections}} -collection:src={{.srcDir}} -collection:lib={{.libDir}} -collection:test_utils={{.testsDir}}/utils'
+  compilerTestCollectionsNoLib: '{{.compilerCollections}} -collection:src={{.srcDir}} -collection:test_utils={{.testsDir}}/utils'
   compilerBaseFlags: '-build-mode:exe'
   compilerDebugFlags: '{{.compilerBaseFlags}} -o:none -debug'
   compilerReleaseFlags: '{{.compilerBaseFlags}} -o:minimal'
@@ -39,27 +43,27 @@ tasks:
   create-build-dir:
     desc: Create the `build` directory.
     status:
-      - bash -c 'test -d "{{.buildDir}}"'
-    cmd: bash -c 'mkdir -p {{.buildDir}}'
+      - '{{.shell}} test -d "{{.buildDir}}"{{.postShell}}'
+    cmd: '{{.shell}} mkdir -p {{.buildDir}}{{.postShell}}'
   create-dist-dir:
     desc: Create the `dist` directory.
     status:
-      - bash -c 'test -d "{{.distDir}}"'
-    cmd: bash -c 'mkdir -p {{.distDir}}'
+      - '{{.shell}} test -d "{{.distDir}}"{{.postShell}}'
+    cmd: '{{.shell}} mkdir -p {{.distDir}}{{.postShell}}'
   create-release-dist-dir:
     desc: Create the `dist/release` directory.
     deps:
       - create-dist-dir
     status:
-      - bash -c 'test -d "{{.distDir}}/release"'
-    cmd: bash -c 'mkdir -p {{.distDir}}/release'
+      - '{{.shell}} test -d "{{.distDir}}/release"{{.postShell}}'
+    cmd: '{{.shell}} mkdir -p {{.distDir}}/release{{.postShell}}'
   create-debug-dist-dir:
     desc: Create the `dist/debug` directory.
     deps:
       - create-dist-dir
     status:
-      - bash -c 'test -d "{{.distDir}}/debug"'
-    cmd: bash -c 'mkdir -p {{.distDir}}/debug'
+      - '{{.shell}} test -d "{{.distDir}}/debug"{{.postShell}}'
+    cmd: '{{.shell}} mkdir -p {{.distDir}}/debug{{.postShell}}'
   build-release:
     desc: Build the project in release mode.
     aliases:
@@ -68,6 +72,7 @@ tasks:
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameRelease}}{{exeExt}}'
@@ -77,6 +82,7 @@ tasks:
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameDebug}}{{exeExt}}'
@@ -91,27 +97,27 @@ tasks:
     aliases:
       - clean
     status:
-      - bash -c 'test ! -f "{{.buildDir}}/{{.outputNameRelease}}{{exeExt}}"'
-    cmd: bash -c 'rm -f {{.buildDir}}/{{.outputNameRelease}}{{exeExt}}'
+      - '{{.shell}} test ! -f "{{.buildDir}}/{{.outputNameRelease}}{{exeExt}}"{{.postShell}}'
+    cmd: '{{.shell}} rm -f {{.buildDir}}/{{.outputNameRelease}}{{exeExt}}{{.postShell}}'
   clean-debug:
     desc: Clean the project in debug mode.
     status:
-      - bash -c 'test ! -f "{{.buildDir}}/{{.outputNameDebug}}{{exeExt}}"'
+      - '{{.shell}} test ! -f "{{.buildDir}}/{{.outputNameDebug}}{{exeExt}}"{{.postShell}}'
     cmds:
-      - bash -c 'rm -f {{.buildDir}}/{{.outputNameDebug}}{{exeExt}}'
-      - cmd: bash -c 'rm -f {{.buildDir}}/{{.outputNameDebug}}.pdb'
+      - '{{.shell}} rm -f {{.buildDir}}/{{.outputNameDebug}}{{exeExt}}{{.postShell}}'
+      - cmd: '{{.shell}} rm -f {{.buildDir}}/{{.outputNameDebug}}.pdb{{.postShell}}'
         platforms:
           - windows
   clean-dist-release:
     desc: Clean the release distribution.
     status:
-      - bash -c 'test ! -d "{{.distDir}}/release/"'
-    cmd: bash -c 'rm -rf {{.distDir}}/release/'
+      - '{{.shell}} test ! -d "{{.distDir}}/release/"{{.postShell}}'
+    cmd: '{{.shell}} rm -rf {{.distDir}}/release/{{.postShell}}'
   clean-dist-debug:
     desc: Clean the debug distribution.
     status:
-      - bash -c 'test ! -d "{{.distDir}}/debug/"'
-    cmd: bash -c 'rm -rf {{.distDir}}/debug/'
+      - '{{.shell}} test ! -d "{{.distDir}}/debug/"{{.postShell}}'
+    cmd: '{{.shell}} rm -rf {{.distDir}}/debug/{{.postShell}}'
   clean-dist-all:
     desc: Clean both release and debug distributions.
     deps:
@@ -120,13 +126,13 @@ tasks:
   clean-archive-release:
     desc: Clean the release archive.
     status:
-      - bash -c 'test ! -f "{{.distDir}}/{{.archiveNameRelease}}"'
-    cmd: bash -c 'rm -f {{.distDir}}/{{.archiveNameRelease}}'
+      - '{{.shell}} test ! -f "{{.distDir}}/{{.archiveNameRelease}}"{{.postShell}}'
+    cmd: '{{.shell}} rm -f {{.distDir}}/{{.archiveNameRelease}}{{.postShell}}'
   clean-archive-debug:
     desc: Clean the debug archive.
     status:
-      - bash -c 'test ! -f "{{.distDir}}/{{.archiveNameDebug}}"'
-    cmd: bash -c 'rm -f {{.distDir}}/{{.archiveNameDebug}}'
+      - '{{.shell}} test ! -f "{{.distDir}}/{{.archiveNameDebug}}"{{.postShell}}'
+    cmd: '{{.shell}} rm -f {{.distDir}}/{{.archiveNameDebug}}{{.postShell}}'
   clean-archive-all:
     desc: Clean both release and debug archives.
     deps:
@@ -142,11 +148,11 @@ tasks:
       - clean-archive-release
       - clean-archive-debug
     status:
-      - bash -c 'test ! -d "{{.buildDir}}"'
-      - bash -c 'test ! -d "{{.distDir}}"'
+      - '{{.shell}} test ! -d "{{.buildDir}}"{{.postShell}}'
+      - '{{.shell}} test ! -d "{{.distDir}}"{{.postShell}}'
     cmds:
-      - bash -c 'rm -rf {{.buildDir}}'
-      - bash -c 'rm -rf {{.distDir}}'
+      - '{{.shell}} rm -rf {{.buildDir}}{{.postShell}}'
+      - '{{.shell}} rm -rf {{.distDir}}{{.postShell}}'
   rebuild-release:
     desc: Rebuild the project in release mode.
     aliases:
@@ -179,7 +185,7 @@ tasks:
       - '{{.buildDir}}/{{.outputNameRelease}}{{exeExt}}'
     generates:
       - '{{.distDir}}/release/{{.outputNameRelease}}{{exeExt}}'
-    cmd: bash -c 'cp {{.buildDir}}/{{.outputNameRelease}}{{exeExt}} {{.distDir}}/release/{{.outputNameRelease}}{{exeExt}}'
+    cmd: '{{.shell}} cp {{.buildDir}}/{{.outputNameRelease}}{{exeExt}} {{.distDir}}/release/{{.outputNameRelease}}{{exeExt}}{{.postShell}}'
   dist-debug:
     desc: Generate a debug distribution.
     deps:
@@ -190,8 +196,8 @@ tasks:
     generates:
       - '{{.distDir}}/debug/{{.outputNameDebug}}.*'
     cmds:
-      - bash -c 'cp {{.buildDir}}/{{.outputNameDebug}}{{exeExt}} {{.distDir}}/debug/{{.outputNameDebug}}{{exeExt}}'
-      - cmd: bash -c 'cp {{.buildDir}}/{{.outputNameDebug}}.pdb {{.distDir}}/debug/{{.outputNameDebug}}.pdb'
+      - '{{.shell}} cp {{.buildDir}}/{{.outputNameDebug}}{{exeExt}} {{.distDir}}/debug/{{.outputNameDebug}}{{exeExt}}{{.postShell}}'
+      - cmd: '{{.shell}} cp {{.buildDir}}/{{.outputNameDebug}}.pdb {{.distDir}}/debug/{{.outputNameDebug}}.pdb{{.postShell}}'
         platforms:
           - windows
   dist-all:
@@ -238,27 +244,43 @@ tasks:
     cmd: '{{.buildDir}}/{{.outputNameDebug}}{{exeExt}}'
   test:
     desc: Run the project unit tests.
+    method: none
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
+      - '{{.libDir}}/*.odin'
+      - '{{.libDir}}/**/*.odin'
+      - '{{.testsDir}}/*.odin'
       - '{{.testsDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameTests}}{{exeExt}}'
-    cmd: '{{.compiler}} test {{.testsDir}} -out:{{.buildDir}}/{{.outputNameTests}}{{exeExt}} {{.compilerTestFlags}} {{.compilerTestDefines}} {{.compilerTestCollections}}'
+    cmd: |
+      if [[ -d {{.libDir}} ]]; then
+          {{.compiler}} test {{.testsDir}} -out:{{.buildDir}}/{{.outputNameTests}}{{exeExt}} {{.compilerTestFlags}} {{.compilerTestDefines}} {{.compilerTestCollections}}
+      else
+          {{.compiler}} test {{.testsDir}} -out:{{.buildDir}}/{{.outputNameTests}}{{exeExt}} {{.compilerTestFlags}} {{.compilerTestDefines}} {{.compilerTestCollectionsNoLib}}
+      fi
   lint-src:
     desc: Lint the project `{{.srcDir}}` directory.
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     cmd: '{{.compiler}} check {{.srcDir}} {{.compilerCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}'
   lint-lib:
     desc: Lint the project `{{.libDir}}` directory.
     sources:
+      - '{{.libDir}}/*.odin'
       - '{{.libDir}}/**/*.odin'
-    cmd: '{{.compiler}} check {{.libDir}}/* {{.compilerLibCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}'
+    cmd: |
+      if [[ -d {{.libDir}} ]]; then
+          {{.compiler}} check {{.libDir}}/* {{.compilerLibCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}
+      fi
   lint-tests:
     desc: Lint the project `{{.testsDir}}` directory.
     sources:
+      - '{{.testsDir}}/*.odin'
       - '{{.testsDir}}/**/*.odin'
     cmd: '{{.compiler}} check {{.testsDir}} {{.compilerTestsCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}'
   lint-all:
@@ -267,4 +289,5 @@ tasks:
       - lint
     deps:
       - lint-src
+      - lint-lib
       - lint-tests
