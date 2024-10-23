@@ -68,6 +68,7 @@ tasks:
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameRelease}}{{exeExt}}'
@@ -77,6 +78,7 @@ tasks:
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameDebug}}{{exeExt}}'
@@ -241,7 +243,11 @@ tasks:
     deps:
       - create-build-dir
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
+      - '{{.libDir}}/*.odin'
+      - '{{.libDir}}/**/*.odin'
+      - '{{.testsDir}}/*.odin'
       - '{{.testsDir}}/**/*.odin'
     generates:
       - '{{.buildDir}}/{{.outputNameTests}}{{exeExt}}'
@@ -249,6 +255,7 @@ tasks:
   lint-src:
     desc: Lint the project `{{.srcDir}}` directory.
     sources:
+      - '{{.srcDir}}/*.odin'
       - '{{.srcDir}}/**/*.odin'
     cmd: '{{.compiler}} check {{.srcDir}} {{.compilerCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}'
   lint-lib:
@@ -259,6 +266,7 @@ tasks:
   lint-tests:
     desc: Lint the project `{{.testsDir}}` directory.
     sources:
+      - '{{.testsDir}}/*.odin'
       - '{{.testsDir}}/**/*.odin'
     cmd: '{{.compiler}} check {{.testsDir}} {{.compilerTestsCheckFlags}} {{.compilerDefines}} {{.compilerCollections}}'
   lint-all:
